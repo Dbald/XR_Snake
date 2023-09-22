@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+  <style>
+    #hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #gameOver {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 24px;
+      z-index: 100;
+      border-radius: 25px;
+    }
+
+    #gameOver button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+
+    #gameOver button:hover {
+      background-color: #2980b9;
+    }
+
+    #stageComplete {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 24px;
+      z-index: 100;
+      border-radius: 25px;
+    }
+
+    #stageComplete button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+
+    #stageComplete button:hover {
+      background-color: #2980b9;
+    }
+
+    .control-zone {
+      position: absolute;
+      z-index: 2;
+      opacity: 0.4;
+      display: none;
+    }
+
+    #control-up {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 25%;
+      background-color: rgba(255, 0, 0, 0.2);
+      /* Red for clarity, can be made transparent or adjusted */
+    }
+
+    #control-down {
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 25%;
+      background-color: rgba(0, 255, 0, 0.2);
+      /* Green for clarity, can be made transparent or adjusted */
+    }
+
+    #control-left {
+      top: 25%;
+      left: 0;
+      width: 50%;
+      height: 50%;
+      background-color: rgba(0, 0, 255, 0.2);
+      /* Blue for clarity, can be made transparent or adjusted */
+    }
+
+    #control-right {
+      top: 25%;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background-color: rgba(255, 255, 0, 0.2);
+      /* Yellow for clarity, can be made transparent or adjusted */
+    }
+
+    @media only screen and (max-width: 768px) {
+      .control-zone {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="hud">
+    Orbs Collected: <span id="orbCount">0</span>
+    <br>
+    Current Stage: <span id="currentStage">1</span>
+    <br>
+    Lives: <span id="livesCount">3</span>
+  </div>
+
+  <div id="gameOver">
+    Game Over
+    <br />
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <!-- Stage Complete Popup -->
+  <div id="stageComplete">
+    Stage <span id="stageNumber">1</span> Complete!
+    <br />
+    <button onclick="continueGame()">Continue</button>
+  </div>
+
+  <!-- Mobile Control -->
+  <div class="control-zone" id="control-up"></div>
+  <div class="control-zone" id="control-down"></div>
+  <div class="control-zone" id="control-left"></div>
+  <div class="control-zone" id="control-right"></div>
+
+
+  <a-scene vr-mode-ui="enabled: false">
+    <a-camera position="0 10 0" rotation="-90 0 0" wasd-controls-enabled="false"
+      look-controls-enabled="false"></a-camera>
+    <a-entity environment="preset: forest; ground: hills; dressing: trees" scale="0.3 0.3 0.3"></a-entity>
+    <a-entity snake-game>
+      <a-box id="snakeHead" position="0 0.5 0" color="blue"></a-box>
+      <a-sphere id="orb" position="2 0.5 2" radius="0.2" color="red"></a-sphere>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    AFRAME.registerComponent('snake-game', {
+      schema: {},
+      init: function () {
+        this.snakeHead = this.el.querySelector('#snakeHead');
+        this.snakeSegments = [this.snakeHead];
+        this.orb = this.el.querySelector('#orb');
+        this.direction = 'right';
+        this.orbCount = 0;
+        this.stage = 1;  // Initialize stage
+        this.targetOrbs = 10;  // Number of orbs required to move to the next stage
+        this.bindMethods();
+        window.addEventListener('keydown', this.onKeyDown);
+        this.stage = 1;
+        document.getElementById("currentStage").textContent = this.stage;
+        this.environments = ['forest', 'egypt', 'osaka', 'volcano', 'contact', 'default', 'goaland', 'yavapai', 'goldmine', 'threetowers', 'poison', 'arches'];
+        this.lives = 3;
+        this.gameLoop = setInterval(this.moveSnake, 100);
+        this.bindMethods();
+
+        // Set up touch controls for mobile
+        this.setupTouchControls();
+
+        window.addEventListener('keydown', this.onKeyDown);
+      },
+      bindMethods: function () {
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.moveSnake = this.moveSnake.bind(this);
+        this.checkCollision = this.checkCollision.bind(this);
+      },
+      onKeyDown: function (event) {
+        if (event.key === 'w') this.direction = 'up';
+        if (event.key === 's') this.direction = 'down';
+        if (event.key === 'a') this.direction = 'left';
+        if (event.key === 'd') this.direction = 'right';
+      },
+      isSelfColliding: function () {
+        let headPosition = this.snakeHead.object3D.position;
+
+        for (let i = 1; i < this.snakeSegments.length; i++) {
+          let segmentPosition = this.snakeSegments[i].object3D.position;
+
+          if (Math.abs(headPosition.x - segmentPosition.x) < 0.5 &&
+            Math.abs(headPosition.z - segmentPosition.z) < 0.5) {
+            return true;
+          }
+        }
+
+        return false;
+      },
+      moveSnake: function () {
+        let lastSegmentPosition = this.snakeSegments[this.snakeSegments.length - 1].object3D.position.clone();
+
+        for (let i = this.snakeSegments.length - 1; i > 0; i--) {
+          let newPosition = this.snakeSegments[i - 1].object3D.position.clone();
+          this.snakeSegments[i].object3D.position.set(newPosition.x, newPosition.y, newPosition.z);
+        }
+
+        let headPosition = this.snakeHead.object3D.position.clone();
+        switch (this.direction) {
+          case 'up':
+            headPosition.z -= 0.50;
+            break;
+          case 'down':
+            headPosition.z += 0.50;
+            break;
+          case 'left':
+            headPosition.x -= 0.50;
+            break;
+          case 'right':
+            headPosition.x += 0.50;
+            break;
+        }
+        this.snakeHead.object3D.position.set(headPosition.x, headPosition.y, headPosition.z);
+
+        this.checkCollision(lastSegmentPosition);
+        if (this.isSelfColliding()) {
+          this.pauseGame();
+        }
+      },
+      pauseGame: function () {
+        this.lives--;
+        document.getElementById("livesCount").textContent = this.lives;
+
+        if (this.lives <= 0) {
+          clearInterval(this.gameLoop);
+          document.getElementById("gameOver").style.display = "block";
+        } else {
+          this.restartCurrentStage();
+        }
+      },
+
+      restartGame: function () {
+        while (this.snakeSegments.length > 1) {
+          let segment = this.snakeSegments.pop();
+          segment.parentNode.removeChild(segment);
+          this.stage = 1;
+          document.getElementById("stageNumber").textContent = this.stage;
+          this.lives = 3;
+          document.getElementById("livesCount").textContent = this.lives;
+          this.setEnvironment(); // <-- reset to the starting environment
+        }
+
+        this.snakeHead.object3D.position.set(0, 0.5, 0);
+        this.direction = 'right';
+        this.orbCount = 0;
+        document.getElementById("orbCount").textContent = this.orbCount;
+        this.gameLoop = setInterval(this.moveSnake, 100);
+        this.spawnOrb();
+        document.getElementById("gameOver").style.display = "none";
+      },
+      spawnOrb: function () {
+        let x = (Math.floor(Math.random() * 10) - 5) * 0.50;
+        let z = (Math.floor(Math.random() * 10) - 5) * 0.50;
+        this.orb.object3D.position.set(x, 0.5, z);
+      },
+      checkCollision: function (lastSegmentPosition) {
+        let distance = this.snakeHead.object3D.position.distanceTo(this.orb.object3D.position);
+        if (distance < 0.70) {
+          let newSegment = document.createElement('a-box');
+          newSegment.setAttribute('color', 'green');
+          newSegment.setAttribute('position', lastSegmentPosition);
+          this.el.appendChild(newSegment);
+          this.snakeSegments.push(newSegment);
+          this.orbCount++;
+          document.getElementById("orbCount").textContent = this.orbCount;
+          this.spawnOrb();
+
+          // Check if the stage target has been reached
+          if (this.orbCount >= this.targetOrbs) {
+            this.advanceToNextStage();
+          }
+        }
+      },
+      advanceToNextStage: function () {
+        clearInterval(this.gameLoop); // Pause the game loop.
+        this.stage++;
+        this.setEnvironment();  // <-- set the new environment
+        document.getElementById("stageNumber").textContent = this.stage;
+        document.getElementById("currentStage").textContent = this.stage; // Add this line
+        document.getElementById("stageComplete").style.display = "block";
+      },
+
+
+
+      continueAfterStageCompletion: function () {
+        // Hide stage complete HUD
+        document.getElementById("stageComplete").style.display = "none";
+
+        // Reset orb count
+        this.orbCount = 0;
+        document.getElementById("orbCount").textContent = this.orbCount;
+
+        // Reset snake position and segments
+        while (this.snakeSegments.length > 1) {
+          let segment = this.snakeSegments.pop();
+          segment.parentNode.removeChild(segment);
+        }
+        this.snakeHead.object3D.position.set(0, 0.5, 0);
+        this.direction = 'right';
+
+        // Restart game loop (if it was paused)
+        this.gameLoop = setInterval(this.moveSnake.bind(this), 100);
+
+        this.spawnOrb();
+      },
+      setEnvironment: function () {
+        let environment = document.querySelector('[environment]');
+        let preset = this.environments[(this.stage - 1) % this.environments.length];
+        environment.setAttribute('environment', `preset: ${preset}`);
+      },
+      restartCurrentStage: function () {
+        while (this.snakeSegments.length > 1) {
+          let segment = this.snakeSegments.pop();
+          segment.parentNode.removeChild(segment);
+        }
+        this.snakeHead.object3D.position.set(0, 0.5, 0);
+        this.direction = 'right';
+        this.orbCount = 0;
+        document.getElementById("orbCount").textContent = this.orbCount;
+        this.spawnOrb();
+      },
+      setupTouchControls: function () {
+        let controlUp = document.getElementById('control-up');
+        let controlDown = document.getElementById('control-down');
+        let controlLeft = document.getElementById('control-left');
+        let controlRight = document.getElementById('control-right');
+
+        controlUp.addEventListener('touchstart', (e) => { this.direction = 'up'; e.preventDefault(); });
+        controlDown.addEventListener('touchstart', (e) => { this.direction = 'down'; e.preventDefault(); });
+        controlLeft.addEventListener('touchstart', (e) => { this.direction = 'left'; e.preventDefault(); });
+        controlRight.addEventListener('touchstart', (e) => { this.direction = 'right'; e.preventDefault(); });
+      },
+
+
+
+
+
+
+    });
+
+    function restartGame() {
+      let gameEntity = document.querySelector('[snake-game]');
+      gameEntity.components['snake-game'].restartGame();
+      this.stage = 1;
+      document.getElementById("currentStage").textContent = this.stage;
+
+    }
+    function continueGame() {
+      let gameEntity = document.querySelector('[snake-game]');
+      gameEntity.components['snake-game'].continueAfterStageCompletion();
+    }
+
+  </script>
+</body>
+
+</html>
