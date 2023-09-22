@@ -1,50 +1,60 @@
-A-Frame Snake Game
+# A-Frame Snake Game
 
 A fun and engaging 3D Snake Game using A-Frame. Navigate the snake in a virtual environment to collect orbs and advance through stages. Watch out for self-collisions!
-Features
 
-    Immersive 3D graphics.
-    Different environments for each stage.
-    Mobile-friendly touch controls.
-    Life system: 3 lives before a full reset.
-    Dynamic display updates for orbs collected and current stage.
+## Features
 
-How to Play
-Desktop Controls:
+- **Immersive 3D graphics** - Dive into a unique 3D experience.
+- **Varied Environments** - Different environments for each stage.
+- **Mobile-friendly** - Play with intuitive touch controls on your mobile device.
+- **Life System** - You get 3 lives before the game resets, so play carefully!
+- **Dynamic Display** - Always know your score with real-time updates for orbs collected and your current stage.
 
-    Use the W, A, S, D keys to control the snake's movement in the direction of Up, Left, Down, and Right respectively.
+## How to Play
 
-Mobile Controls:
+### Desktop Controls:
 
-    Touch the top part of the screen to move the snake Up.
-    Touch the bottom part of the screen to move the snake Down.
-    Touch the left side of the screen to move the snake Left.
-    Touch the right side of the screen to move the snake Right.
+- `W`: Move Up
+- `A`: Move Left
+- `S`: Move Down
+- `D`: Move Right
 
-Objective:
+### Mobile Controls:
 
-    Collect red orbs to increase your score and the length of the snake.
-    Every time you collect enough orbs, you will advance to the next stage.
-    Each stage will introduce a new environment.
-    Be careful not to collide with yourself.
-    You have 3 lives. Each self-collision reduces one life.
-    If you run out of lives, the game resets completely.
+- **Top of screen**: Move Up
+- **Bottom of screen**: Move Down
+- **Left side**: Move Left
+- **Right side**: Move Right
 
-Installation
+### Objective:
 
-    Clone this repository.
-    Open the index.html file in your favorite browser.
+- Collect the **red orbs** to increase your score and the length of the snake.
+- Reach the target number of orbs to advance to the next stage.
+- Explore and enjoy a new environment with each stage.
+- Avoid colliding with yourself to stay in the game.
+- Run out of lives? No worries! Start over and aim for a higher score.
 
-Customization
+## Installation
 
-    Feel free to modify the source code to introduce more stages, adjust the difficulty, or introduce new features.
+1. Clone this repository.
+2. Navigate to the project directory.
+3. Open `index.html` in your favorite web browser.
 
-Technologies Used
+## Customization
 
-    A-Frame: For 3D graphics rendering and game environment setup.
-    JavaScript: For game logic and interactivity.
+Feel free to dive into the source code to:
+- Introduce more stages
+- Adjust the difficulty
+- Add new features or challenges
 
-Credits
+## Technologies Used
 
-    A-Frame: https://aframe.io/
-    A-Frame Environment Component: https://www.npmjs.com/package/aframe-environment-component
+- **A-Frame**: For creating the 3D virtual environment.
+- **JavaScript**: Powers the game dynamics and interactivity.
+
+## Credits
+
+- [A-Frame](https://aframe.io/)
+- [A-Frame Environment Component](https://www.npmjs.com/package/aframe-environment-component)
+
+
