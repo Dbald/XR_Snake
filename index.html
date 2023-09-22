@@ -80,53 +80,58 @@
       background-color: #2980b9;
     }
 
-    .control-zone {
-      position: absolute;
-      z-index: 2;
-      opacity: 0.4;
+    .controls {
       display: none;
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      width: 60%;
+      text-align: center;
     }
 
-    #control-up {
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 25%;
-      background-color: rgba(255, 0, 0, 0.2);
-      /* Red for clarity, can be made transparent or adjusted */
+    .horizontal-controls {
+      display: flex;
+      justify-content: space-evenly;
     }
 
-    #control-down {
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 25%;
-      background-color: rgba(0, 255, 0, 0.2);
-      /* Green for clarity, can be made transparent or adjusted */
+    .control {
+      font-size: 2em;
+      background-color: black;
+      border: none;
+      color: white;
+      opacity: 0.6;
+      cursor: pointer;
+      width: 50px;
+      /* or adjust as needed */
+      height: 50px;
+      /* or adjust as needed */
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    #control-left {
-      top: 25%;
-      left: 0;
-      width: 50%;
-      height: 50%;
-      background-color: rgba(0, 0, 255, 0.2);
-      /* Blue for clarity, can be made transparent or adjusted */
+    .control:focus {
+      outline: none;
     }
 
-    #control-right {
-      top: 25%;
-      right: 0;
-      width: 50%;
-      height: 50%;
-      background-color: rgba(255, 255, 0, 0.2);
-      /* Yellow for clarity, can be made transparent or adjusted */
+    .left {
+      margin-right: 25px;
     }
 
-    @media only screen and (max-width: 768px) {
-      .control-zone {
-        display: block;
+    .right {
+      margin-left: 25px;
+    }
+
+    @media only screen and (max-width: 600px) {
+      .controls {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
       }
+
     }
   </style>
 </head>
@@ -154,11 +159,14 @@
   </div>
 
   <!-- Mobile Control -->
-  <div class="control-zone" id="control-up"></div>
-  <div class="control-zone" id="control-down"></div>
-  <div class="control-zone" id="control-left"></div>
-  <div class="control-zone" id="control-right"></div>
-
+<div id="mobileControls" class="controls">
+  <button id="control-up" class="control up">↑</button>
+  <div class="horizontal-controls">
+    <button id="control-left" class="control left">←</button>
+    <button id="control-right" class="control right">→</button>
+  </div>
+  <button id="control-down" class="control down">↓</button>
+</div>
 
   <a-scene vr-mode-ui="enabled: false">
     <a-camera position="0 10 0" rotation="-90 0 0" wasd-controls-enabled="false"
@@ -358,15 +366,13 @@
         let controlLeft = document.getElementById('control-left');
         let controlRight = document.getElementById('control-right');
 
+
         controlUp.addEventListener('touchstart', (e) => { this.direction = 'up'; e.preventDefault(); });
         controlDown.addEventListener('touchstart', (e) => { this.direction = 'down'; e.preventDefault(); });
         controlLeft.addEventListener('touchstart', (e) => { this.direction = 'left'; e.preventDefault(); });
         controlRight.addEventListener('touchstart', (e) => { this.direction = 'right'; e.preventDefault(); });
+
       },
-
-
-
-
 
 
     });
@@ -382,6 +388,19 @@
       let gameEntity = document.querySelector('[snake-game]');
       gameEntity.components['snake-game'].continueAfterStageCompletion();
     }
+
+    // Check if it's a mobile device
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      let gameEntity = document.querySelector('[snake-game]');
+
+      
+    }
+
+    function changeDirection(dir) {
+      let gameEntity = document.querySelector('[snake-game]');
+      gameEntity.components['snake-game'].direction = dir;
+    }
+
 
   </script>
 </body>
